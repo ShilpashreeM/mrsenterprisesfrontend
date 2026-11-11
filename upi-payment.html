@@ -1,0 +1,390 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPI Payment | MRS Enterprises</title>
+
+    <script src="api.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px 16px;
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #222;
+        }
+
+        .payment-container {
+            max-width: 560px;
+            margin: 20px auto;
+            padding: 28px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 3px 18px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            text-align: center;
+            font-size: 25px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .order-summary {
+            margin: 24px 0;
+            padding: 16px;
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 10px 0;
+        }
+
+        .amount {
+            color: #087443;
+            font-size: 23px;
+            font-weight: bold;
+        }
+
+        .qr-section {
+            text-align: center;
+            margin: 24px 0;
+        }
+
+        .qr-section img {
+            display: block;
+            width: 220px;
+            max-width: 100%;
+            margin: 14px auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .upi-id {
+            overflow-wrap: anywhere;
+            font-weight: bold;
+        }
+
+        label {
+            display: block;
+            margin: 18px 0 8px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 6px;
+            background: #087443;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .message {
+            margin-top: 16px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .error {
+            color: #b42318;
+        }
+
+        .success {
+            color: #087443;
+        }
+
+        .notice {
+            padding: 12px;
+            background: #fff7e6;
+            border-radius: 6px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 480px) {
+            .payment-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="payment-container">
+        <h1>Complete Your UPI Payment</h1>
+
+        <p class="subtitle">
+            MRS Enterprises — Plumbing &amp; Hardware Supplier
+        </p>
+
+        <div class="order-summary">
+            <div class="summary-row">
+                <span>Order ID</span>
+                <strong id="order-id">Loading...</strong>
+            </div>
+
+            <div class="summary-row">
+                <span>Amount to pay</span>
+                <span class="amount" id="order-amount">Loading...</span>
+            </div>
+        </div>
+
+        <section class="qr-section">
+            <h3>Scan the QR code to pay</h3>
+
+            <img
+                src="images/mrs-upi-qr.jpeg"
+                alt="MRS Enterprises UPI QR code"
+            >
+<!-- 
+            <p>UPI ID</p>
+            <p class="upi-id">9739005629@hdfc</p> -->
+
+            <a id="upi-pay-link" href="#" hidden>
+                Open your UPI app
+            </a>
+        </section>
+
+        <p class="notice">
+            After paying, enter your UPI transaction ID (UTR) and upload
+            a screenshot. Your payment will remain pending until MRS
+            Enterprises verifies the transaction.
+        </p>
+
+        <form id="upi-payment-form">
+            <label for="upi-transaction-id">
+                UPI Transaction ID / UTR
+            </label>
+
+            <input
+                type="text"
+                id="upi-transaction-id"
+                name="upiTransactionId"
+                maxlength="100"
+                required
+                autocomplete="off"
+                placeholder="Enter your transaction reference"
+            >
+
+            <label for="payment-screenshot">
+                Payment Screenshot
+            </label>
+
+            <input
+                type="file"
+                id="payment-screenshot"
+                name="screenshot"
+                accept="image/jpeg,image/png,image/webp"
+                required
+            >
+
+            <button type="submit" id="submit-button">
+                Submit Payment Details
+            </button>
+
+            <p id="message" class="message" role="status"></p>
+        </form>
+    </main>
+
+    <script>
+        const token = localStorage.getItem("token");
+        const params = new URLSearchParams(window.location.search);
+        const orderId = params.get("orderId");
+
+        const orderIdElement = document.getElementById("order-id");
+        const amountElement = document.getElementById("order-amount");
+        const form = document.getElementById("upi-payment-form");
+        const messageElement = document.getElementById("message");
+        const submitButton = document.getElementById("submit-button");
+        const upiPayLink = document.getElementById("upi-pay-link");
+
+        let currentOrder = null;
+
+        function showMessage(message, isError = false) {
+            messageElement.textContent = message;
+            messageElement.className =
+                "message " + (isError ? "error" : "success");
+        }
+
+        async function loadOrder() {
+            if (!token) {
+                window.location.href = "login.html";
+                return;
+            }
+
+            if (!orderId) {
+                throw new Error("Order ID is missing from the page URL.");
+            }
+
+            const response = await fetch(
+                `${API_BASE_URL}/orders/${encodeURIComponent(orderId)}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success || !result.data) {
+                throw new Error(result.message || "Unable to load your order.");
+            }
+
+            currentOrder = result.data;
+
+            if (
+                currentOrder.paymentMethod !== "UPI" ||
+                currentOrder.paymentStatus !== "PENDING"
+            ) {
+                throw new Error(
+                    "This order is not awaiting a UPI payment. Please check your order status."
+                );
+            }
+
+            const total = Number(
+                currentOrder.totalAmount ??
+                currentOrder.grandTotal ??
+                currentOrder.total ??
+                currentOrder.amount
+            );
+
+            if (!Number.isFinite(total) || total < 0) {
+                throw new Error(
+                    "Unable to determine the order total. Please contact us before paying."
+                );
+            }
+
+            orderIdElement.textContent = currentOrder._id;
+            amountElement.textContent = total.toLocaleString("en-IN", {
+                style: "currency",
+                currency: "INR"
+            });
+
+            const upiUrl = new URL("upi://pay");
+            upiUrl.searchParams.set("pa", "9739005629@hdfc");
+            upiUrl.searchParams.set("pn", "MRS Enterprises");
+            upiUrl.searchParams.set("am", total.toFixed(2));
+            upiUrl.searchParams.set("cu", "INR");
+            upiUrl.searchParams.set("tn", "Order " + currentOrder._id);
+
+            upiPayLink.href = upiUrl.toString();
+            upiPayLink.hidden = false;
+        }
+
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            if (!currentOrder || !token) {
+                showMessage("Order details are unavailable. Reload the page.", true);
+                return;
+            }
+
+            const transactionId =
+                document.getElementById("upi-transaction-id").value.trim();
+
+            const screenshot =
+                document.getElementById("payment-screenshot").files[0];
+
+            if (!transactionId || !screenshot) {
+                showMessage("Enter the transaction ID and select a screenshot.", true);
+                return;
+            }
+
+            const allowedTypes = [
+                "image/jpeg",
+                "image/png",
+                "image/webp"
+            ];
+
+            if (!allowedTypes.includes(screenshot.type)) {
+                showMessage("Please upload a JPG, PNG, or WebP image.", true);
+                return;
+            }
+
+            if (screenshot.size > 5 * 1024 * 1024) {
+                showMessage("The screenshot must be 5 MB or smaller.", true);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("upiTransactionId", transactionId);
+            formData.append("screenshot", screenshot);
+
+            submitButton.disabled = true;
+            showMessage("Submitting your payment details...");
+
+            try {
+                const response = await fetch(
+                    `${API_BASE_URL}/orders/${encodeURIComponent(orderId)}/upi-payment`,
+                    {
+                        method: "POST",
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        },
+                        body: formData
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        result.message || "Unable to submit payment details."
+                    );
+                }
+
+                form.hidden = true;
+                upiPayLink.hidden = true;
+
+                showMessage(
+                    "Payment details submitted. Your payment is awaiting verification by MRS Enterprises. Please do not pay again."
+                );
+            } catch (error) {
+                showMessage(error.message || "Something went wrong.", true);
+                submitButton.disabled = false;
+            }
+        });
+
+        loadOrder().catch(error => {
+            showMessage(error.message || "Unable to load the order.", true);
+            form.hidden = true;
+            upiPayLink.hidden = true;
+        });
+    </script>
+</body>
+</html>

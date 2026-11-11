@@ -1,0 +1,1077 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Products | MRS Enterprises</title>
+    <meta name="description" content="Browse plumbing, valves, fittings and hardware products from MRS Enterprises.">
+    <link rel="icon" type="image/png" href="images/MRS.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="footer.css">
+
+    <style>
+        :root {
+            --mrs-navy: #0b3157;
+            --mrs-blue: #0966c5;
+            --mrs-light: #f3f7fb;
+            --mrs-border: #e1e8f0;
+            --mrs-text: #172b45;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--mrs-light);
+            color: var(--mrs-text);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        /* Page banner */
+        .products-banner {
+            padding: 30px 5%;
+            background:
+                linear-gradient(90deg, rgba(244,249,253,.98), rgba(244,249,253,.78)),
+                url("images/pipehome1.png") center/cover no-repeat;
+            border-bottom: 1px solid var(--mrs-border);
+        }
+
+        .products-banner h1 {
+            margin: 0 0 8px;
+            color: var(--mrs-navy);
+            font-size: clamp(27px, 3vw, 40px);
+        }
+
+        .products-banner p {
+            margin: 0;
+            color: #53657a;
+            font-size: 16px;
+        }
+
+        /* Main layout */
+        .catalog-layout {
+        width: 100%;
+        max-width: 1800px;
+        margin: 25px auto;
+        padding: 0 32px;
+        display: grid;
+        grid-template-columns: 250px minmax(0, 1fr);
+        gap: 24px;
+        align-items: start;
+    }
+
+        /* Category sidebar */
+        .category-panel {
+            background: white;
+            border: 1px solid var(--mrs-border);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 12px rgba(20, 50, 80, .05);
+        }
+
+        .category-heading {
+            padding: 17px;
+            background: var(--mrs-navy);
+            color: white;
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .category-list {
+            padding: 8px;
+        }
+
+        .category-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 10px;
+            border: none;
+            border-radius: 7px;
+            background: transparent;
+            color: var(--mrs-text);
+            text-align: left;
+            font-size: 13px;
+            cursor: pointer;
+            margin-bottom: 3px;
+        }
+
+        .category-btn:hover {
+            background: #f0f6fd;
+        }
+
+        .category-btn.active {
+            background: #e2f0ff;
+            color: #0756ad;
+            font-weight: 700;
+        }
+
+        .category-icon {
+            width: 25px;
+            text-align: center;
+            font-size: 17px;
+        }
+
+        .category-name {
+            flex: 1;
+        }
+
+        .category-count {
+            min-width: 25px;
+            padding: 4px 6px;
+            border-radius: 6px;
+            background: #edf1f5;
+            text-align: center;
+            font-size: 11px;
+        }
+
+        /* Search and sort */
+        .catalog-content {
+            min-width: 0;
+        }
+
+        .catalog-toolbar {
+            display: grid;
+            grid-template-columns: minmax(160px, 1fr) auto auto;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            display: flex;
+            min-width: 0;
+            align-items: center;
+            background: white;
+            border: 1px solid #cbd8e6;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .search-icon {
+            padding-left: 13px;
+            font-size: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            min-width: 0;
+            padding: 14px 12px;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            background: transparent;
+        }
+
+        .search-btn,
+        .clear-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 7px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .search-btn {
+            color: white;
+            background: var(--mrs-blue);
+            font-weight: 700;
+        }
+
+        .search-btn:hover {
+            background: var(--mrs-navy);
+        }
+
+        .sort-box {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .sort-box select {
+            max-width: 170px;
+            padding: 12px;
+            border: 1px solid var(--mrs-border);
+            border-radius: 7px;
+            background: white;
+            color: var(--mrs-text);
+            font-size: 13px;
+        }
+
+        .catalog-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .catalog-summary p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .clear-btn {
+            padding: 7px 11px;
+            color: var(--mrs-navy);
+            background: white;
+            border: 1px solid var(--mrs-border);
+        }
+
+        /* Product grid */
+        .all-products-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+        .all-product-card {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 14px;
+            background: white;
+            border: 1px solid #edf0f4;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(20, 50, 80, .05);
+            transition: transform .18s ease, box-shadow .18s ease;
+        }
+
+        .all-product-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 18px rgba(20, 50, 80, .11);
+        }
+
+        .product-image-wrap {
+            position: relative;
+            height: 170px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .all-product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .discount-badge {
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            transform: translateX(-50%);
+            padding: 5px 9px;
+            border-radius: 5px;
+            background: #ffebeb;
+            color: #d82929;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .all-product-card h3 {
+            min-height: 42px;
+            margin: 7px 0;
+            color: var(--mrs-navy);
+            font-size: 14px;
+            line-height: 1.4;
+            text-align: center;
+            overflow-wrap: anywhere;
+        }
+
+        .all-product-brand {
+            margin: 3px 0 9px;
+            color: #758397;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .all-product-price {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin: 7px 0 13px;
+            font-size: 14px;
+        }
+
+        .all-product-price del {
+            color: #7c8795;
+            font-size: 12px;
+        }
+
+        .all-product-price strong {
+            color: var(--mrs-navy);
+            font-size: 15px;
+        }
+
+        .all-product-btn {
+            display: block;
+            width: 100%;
+            margin-top: auto;
+            padding: 11px 8px;
+            border-radius: 6px;
+            background: var(--mrs-navy);
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+            text-decoration: none;
+            transition: background .2s ease;
+        }
+
+        .all-product-btn:hover {
+            background: var(--mrs-blue);
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 28px 0 15px;
+        }
+
+        .page-btn {
+            min-width: 42px;
+            padding: 10px 14px;
+            border: 1px solid var(--mrs-border);
+            border-radius: 6px;
+            background: white;
+            color: var(--mrs-navy);
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .page-btn.active {
+            background: var(--mrs-navy);
+            border-color: var(--mrs-navy);
+            color: white;
+        }
+
+        .page-btn:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+        .pagination-summary {
+            margin-left: auto;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .products-message {
+            grid-column: 1 / -1;
+            padding: 40px 15px;
+            border-radius: 9px;
+            background: white;
+            text-align: center;
+            color: #53657a;
+        }
+
+        /* Responsive */
+        @media (min-width: 1400px) {
+            .all-products-grid {
+                grid-template-columns: repeat(5, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 1100px) {
+            .catalog-layout {
+                grid-template-columns: 210px minmax(0, 1fr);
+                gap: 16px;
+                padding: 0 16px;
+            }
+
+            .all-products-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .catalog-toolbar {
+                grid-template-columns: minmax(0, 1fr) auto;
+            }
+
+            .search-box {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .catalog-layout {
+                display: block;
+                margin-top: 15px;
+                padding: 0 12px;
+            }
+
+            .products-banner {
+                padding: 23px 16px;
+            }
+
+            .products-banner p {
+                font-size: 14px;
+            }
+
+            .category-panel {
+                margin-bottom: 16px;
+            }
+
+            .category-heading {
+                padding: 12px;
+            }
+
+            .category-list {
+                display: flex;
+                gap: 7px;
+                overflow-x: auto;
+                padding: 9px;
+            }
+
+            .category-btn {
+                width: auto;
+                min-width: max-content;
+                margin: 0;
+                padding: 9px;
+                border: 1px solid var(--mrs-border);
+            }
+
+            .category-icon {
+                display: none;
+            }
+
+            .catalog-toolbar {
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: 8px;
+            }
+
+            .search-box {
+                grid-column: 1 / -1;
+            }
+
+            .search-box input {
+                font-size: 13px;
+            }
+
+            .search-btn {
+                padding: 10px 13px;
+            }
+
+            .sort-box {
+                justify-content: flex-end;
+                font-size: 12px;
+            }
+
+            .sort-box select {
+                max-width: 145px;
+                padding: 10px 7px;
+                font-size: 12px;
+            }
+
+            .all-products-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 10px;
+            }
+
+            .all-product-card {
+                padding: 10px;
+            }
+
+            .product-image-wrap {
+                height: 125px;
+            }
+
+            .all-product-card h3 {
+                min-height: 54px;
+                font-size: 12px;
+            }
+
+            .all-product-price {
+                gap: 4px;
+                font-size: 12px;
+            }
+
+            .all-product-price strong {
+                font-size: 13px;
+            }
+
+            .all-product-price del {
+                font-size: 10px;
+            }
+
+            .all-product-btn {
+                padding: 10px 5px;
+                font-size: 11px;
+            }
+
+            .pagination-summary {
+                width: 100%;
+                margin: 8px 0 0;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="menu">
+    <a href="index.html">
+        <img src="images/MRS.png" class="logo" alt="MRS Enterprises">
+    </a>
+
+    <nav class="desktop-nav">
+        <a href="index.html">Home</a>
+        <a href="about.html">About Us</a>
+        <a class="active" href="display-products.html">Our Products</a>
+        <a href="cart.html">🛒 Cart</a>
+        <a href="orders.html">📦 My Orders</a>
+        <a href="admin-orders.html" id="adminNavLink" hidden>Admin</a>
+        <a href="login.html" class="login-link">Login</a>
+        <a href="#" class="logout-link" style="display:none"
+           onclick="logout(); return false;">Logout</a>
+        <a href="contact.html">Contact Us</a>
+    </nav>
+
+    <div class="hamburger" onclick="openMenu()">&#9776;</div>
+</header>
+
+<div id="mobileMenu" class="mobile-menu">
+    <div class="mobile-menu-header">
+        <img src="images/MRS.png" class="mobile-logo" alt="MRS">
+        <span class="close-btn" onclick="closeMenu()">✕</span>
+    </div>
+    <a href="index.html">Home</a>
+    <a href="about.html">About Us</a>
+    <a href="display-products.html">Our Products</a>
+    <a href="cart.html">🛒 Cart</a>
+    <a href="orders.html">📦 My Orders</a>
+    <a href="contact.html">Contact Us</a>
+</div>
+
+<section class="products-banner">
+    <h1>Our Products</h1>
+    <p>Explore our wide range of plumbing and hardware products.</p>
+</section>
+
+<main class="catalog-layout">
+
+    <aside class="category-panel">
+        <div class="category-heading">☰ &nbsp; Categories</div>
+        <div id="category-list" class="category-list">
+            <p class="products-message">Loading categories...</p>
+        </div>
+    </aside>
+
+    <section class="catalog-content">
+
+        <div class="catalog-toolbar">
+            <form id="search-form" class="search-box">
+                <span class="search-icon">⌕</span>
+                <input
+                    id="product-search"
+                    type="search"
+                    placeholder="Search products by name, brand or category..."
+                    aria-label="Search products">
+                <button class="search-btn" type="submit">Search</button>
+            </form>
+
+            <label class="sort-box">
+                Sort by
+                <select id="sort-products">
+                    <option value="name-asc">Name (A - Z)</option>
+                    <option value="name-desc">Name (Z - A)</option>
+                    <option value="price-asc">Price (Low - High)</option>
+                    <option value="price-desc">Price (High - Low)</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="catalog-summary">
+            <p id="product-count" aria-live="polite">Loading products...</p>
+            <button type="button" class="clear-btn" id="clear-filters">
+                Clear filters
+            </button>
+        </div>
+
+        <div id="products-container" class="all-products-grid">
+            <p class="products-message">Loading products...</p>
+        </div>
+
+        <div id="pagination" class="pagination"></div>
+
+    </section>
+</main>
+
+<div id="footer-placeholder"></div>
+
+<script src="api.js"></script>
+
+<script>
+    const PAGE_SIZE = 12;
+
+    let allProducts = [];
+    let filteredProducts = [];
+    let currentPage = 1;
+    let selectedCategory = "all";
+
+    const categoryIcons = {
+        "support fittings": "🔩",
+        "brass fittings": "🟡",
+        "brass valves & fittings": "🔧",
+        "butterfly valves": "🔵",
+        "fire fighting systems": "🧯",
+        "pipes & fittings": "🪈",
+        "tanks": "🛢️",
+        "strainers": "⚙️",
+        "flange": "🔘",
+        "ms fittings": "🔩",
+        "frp manhole cover": "⬛",
+        "ci pipes & fittings": "🔧"
+    };
+
+    function openMenu() {
+        document.getElementById("mobileMenu").classList.add("open");
+    }
+
+    function closeMenu() {
+        document.getElementById("mobileMenu").classList.remove("open");
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? "").replace(/[&<>"']/g, character => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        })[character]);
+    }
+
+    function formatPrice(value) {
+        const price = Number(value);
+
+        return Number.isFinite(price)
+            ? "₹" + price.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            })
+            : "Price unavailable";
+    }
+
+    function getProductCategory(product) {
+        const category = product.category;
+
+        if (typeof category === "string") {
+            return category;
+        }
+
+        return category?.name || "Other";
+    }
+
+    function getProductPrice(product) {
+        const variations = (product.variations || []).filter(item =>
+            item.isActive !== false &&
+            item.sellingPrice !== null &&
+            item.sellingPrice !== undefined &&
+            item.sellingPrice !== "" &&
+            Number.isFinite(Number(item.sellingPrice))
+        );
+
+        if (variations.length) {
+            const lowestPrice = Math.min(
+                ...variations.map(item => Number(item.sellingPrice))
+            );
+
+            const lowestPriceVariations = variations.filter(
+                item => Number(item.sellingPrice) === lowestPrice
+            );
+
+            const validMrps = lowestPriceVariations
+                .map(item => Number(item.mrp))
+                .filter(value => Number.isFinite(value) && value > lowestPrice);
+
+            return {
+                price: lowestPrice,
+                mrp: validMrps.length ? Math.min(...validMrps) : null
+            };
+        }
+
+        const price = Number(product.sellingPrice);
+
+        if (
+            product.sellingPrice === null ||
+            product.sellingPrice === undefined ||
+            product.sellingPrice === "" ||
+            !Number.isFinite(price)
+        ) {
+            return { price: null, mrp: null };
+        }
+
+        const mrp = Number(product.mrp);
+
+        return {
+            price,
+            mrp: Number.isFinite(mrp) && mrp > price ? mrp : null
+        };
+    }
+
+    function renderCategories() {
+        const container = document.getElementById("category-list");
+
+        const categoryCounts = new Map();
+
+        allProducts.forEach(product => {
+            const category = getProductCategory(product);
+            categoryCounts.set(
+                category,
+                (categoryCounts.get(category) || 0) + 1
+            );
+        });
+
+        const categories = Array.from(categoryCounts.entries())
+            .sort((a, b) => a[0].localeCompare(b[0]));
+
+        const categoryHtml = categories.map(([name, count]) => {
+            const key = name.toLowerCase();
+            const icon = categoryIcons[key] || "📦";
+
+            return `
+                <button type="button"
+                    class="category-btn ${selectedCategory === name ? "active" : ""}"
+                    data-category="${escapeHtml(name)}">
+                    <span class="category-icon">${icon}</span>
+                    <span class="category-name">${escapeHtml(name)}</span>
+                    <span class="category-count">${count}</span>
+                </button>
+            `;
+        }).join("");
+
+        container.innerHTML = `
+            <button type="button"
+                class="category-btn ${selectedCategory === "all" ? "active" : ""}"
+                data-category="all">
+                <span class="category-icon">▦</span>
+                <span class="category-name">All Products</span>
+                <span class="category-count">${allProducts.length}</span>
+            </button>
+            ${categoryHtml}
+        `;
+
+        container.querySelectorAll("[data-category]").forEach(button => {
+            button.addEventListener("click", () => {
+                selectedCategory = button.dataset.category;
+                currentPage = 1;
+                renderCategories();
+                applyFilters();
+            });
+        });
+    }
+
+    function applyFilters() {
+        const searchTerm = document.getElementById("product-search")
+            .value.trim().toLowerCase();
+
+        const sortOrder = document.getElementById("sort-products").value;
+
+        filteredProducts = allProducts.filter(product => {
+            const category = getProductCategory(product);
+
+            const matchesCategory =
+                selectedCategory === "all" ||
+                category === selectedCategory;
+
+            const searchableText = [
+                product.name,
+                product.brand,
+                category,
+                product.description,
+                ...(product.tags || [])
+            ].filter(Boolean).join(" ").toLowerCase();
+
+            return matchesCategory && searchableText.includes(searchTerm);
+        });
+
+        filteredProducts.sort((a, b) => {
+            if (sortOrder === "name-asc") {
+                return String(a.name || "").localeCompare(String(b.name || ""));
+            }
+
+            if (sortOrder === "name-desc") {
+                return String(b.name || "").localeCompare(String(a.name || ""));
+            }
+
+            const priceA = getProductPrice(a).price;
+            const priceB = getProductPrice(b).price;
+
+            if (sortOrder === "price-asc" || sortOrder === "price-desc") {
+                if (priceA === null) return 1;
+                if (priceB === null) return -1;
+
+                return sortOrder === "price-asc"
+                    ? priceA - priceB
+                    : priceB - priceA;
+            }
+
+            return 0;
+        });
+
+        const totalPages = Math.ceil(filteredProducts.length / PAGE_SIZE);
+
+        if (totalPages > 0 && currentPage > totalPages) {
+            currentPage = totalPages;
+        }
+
+        renderProducts();
+    }
+
+    function renderProducts() {
+        const container = document.getElementById("products-container");
+        const pagination = document.getElementById("pagination");
+
+        const total = filteredProducts.length;
+        const totalPages = Math.ceil(total / PAGE_SIZE);
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const pageProducts = filteredProducts.slice(start, start + PAGE_SIZE);
+
+        document.getElementById("product-count").textContent =
+            `${total} product${total === 1 ? "" : "s"} available`;
+
+        if (!pageProducts.length) {
+            container.innerHTML = `
+                <p class="products-message">
+                    No products found. Try another search or clear your filters.
+                </p>
+            `;
+            pagination.innerHTML = "";
+            return;
+        }
+
+        container.innerHTML = pageProducts.map(product => {
+            const { price, mrp } = getProductPrice(product);
+
+            const image = product.thumbnail ||
+                product.images?.[0] ||
+                "images/products/fall_back.png";
+
+            let discountHtml = "";
+
+            if (price !== null && mrp !== null && mrp > price) {
+                const discount = Math.round(((mrp - price) / mrp) * 100);
+
+                if (discount > 0) {
+                    discountHtml = `
+                        <span class="discount-badge">${discount}% OFF</span>
+                    `;
+                }
+            }
+
+            const priceHtml = price !== null
+                ? `
+                    ${mrp !== null ? `<del>${formatPrice(mrp)}</del>` : ""}
+                    <strong>${formatPrice(price)}</strong>
+                `
+                : `<strong>Price unavailable</strong>`;
+
+            const productName = escapeHtml(product.name || "Product");
+            const brand = escapeHtml(product.brand || "");
+            const safeImage = escapeHtml(image);
+            const productId = encodeURIComponent(product._id || "");
+
+            return `
+                <article class="all-product-card">
+                    <div class="product-image-wrap">
+                        <img
+                            class="all-product-image"
+                            src="${safeImage}"
+                            alt="${productName}"
+                            loading="lazy"
+                            onerror="this.onerror=null;this.src='images/MRS.png';"
+                        >
+                        ${discountHtml}
+                    </div>
+
+                    <h3>${productName}</h3>
+
+                    ${brand
+                        ? `<p class="all-product-brand">${brand}</p>`
+                        : `<p class="all-product-brand">&nbsp;</p>`}
+
+                    <p class="all-product-price">${priceHtml}</p>
+
+                    <a class="all-product-btn"
+                       href="product-details.html#id=${productId}">
+                        🛒 &nbsp; View Product
+                    </a>
+                </article>
+            `;
+        }).join("");
+
+        const pageButtons = [];
+
+        pageButtons.push(`
+            <button class="page-btn"
+                data-page="${currentPage - 1}"
+                ${currentPage === 1 ? "disabled" : ""}>
+                Previous
+            </button>
+        `);
+
+        for (let page = 1; page <= totalPages; page++) {
+            if (
+                page === 1 ||
+                page === totalPages ||
+                Math.abs(page - currentPage) <= 1
+            ) {
+                pageButtons.push(`
+                    <button class="page-btn ${page === currentPage ? "active" : ""}"
+                        data-page="${page}"
+                        ${page === currentPage ? 'aria-current="page"' : ""}>
+                        ${page}
+                    </button>
+                `);
+            } else if (Math.abs(page - currentPage) === 2) {
+                pageButtons.push(`<span>…</span>`);
+            }
+        }
+
+        pageButtons.push(`
+            <button class="page-btn"
+                data-page="${currentPage + 1}"
+                ${currentPage === totalPages ? "disabled" : ""}>
+                Next
+            </button>
+        `);
+
+        pagination.innerHTML = `
+            ${pageButtons.join("")}
+            <span class="pagination-summary">
+                Showing ${start + 1}–${Math.min(start + PAGE_SIZE, total)}
+                of ${total} products
+            </span>
+        `;
+
+        pagination.querySelectorAll("[data-page]").forEach(button => {
+            button.addEventListener("click", () => {
+                changePage(Number(button.dataset.page));
+            });
+        });
+    }
+
+    function changePage(page) {
+        const totalPages = Math.ceil(filteredProducts.length / PAGE_SIZE);
+
+        if (page < 1 || page > totalPages) return;
+
+        currentPage = page;
+        renderProducts();
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function loadAllProducts() {
+        const container = document.getElementById("products-container");
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/products`);
+
+            if (!response.ok) {
+                throw new Error(`Product API returned ${response.status}`);
+            }
+
+            const result = await response.json();
+
+            const products = Array.isArray(result)
+                ? result
+                : result.data || result.products || [];
+
+            allProducts = products.filter(
+                product => product.isActive !== false
+            );
+
+            renderCategories();
+            applyFilters();
+        } catch (error) {
+            console.error("Failed to load products:", error);
+
+            container.innerHTML = `
+                <p class="products-message">
+                    Unable to load products. Please try again later.
+                </p>
+            `;
+
+            document.getElementById("product-count").textContent = "";
+        }
+    }
+
+    document.getElementById("search-form").addEventListener("submit", event => {
+        event.preventDefault();
+        currentPage = 1;
+        applyFilters();
+    });
+
+    document.getElementById("product-search").addEventListener("input", () => {
+        currentPage = 1;
+        applyFilters();
+    });
+
+    document.getElementById("sort-products").addEventListener("change", () => {
+        currentPage = 1;
+        applyFilters();
+    });
+
+    document.getElementById("clear-filters").addEventListener("click", () => {
+        selectedCategory = "all";
+        currentPage = 1;
+        document.getElementById("product-search").value = "";
+        document.getElementById("sort-products").value = "name-asc";
+        renderCategories();
+        applyFilters();
+    });
+
+    fetch("footer.html")
+        .then(response => {
+            if (!response.ok) throw new Error("Footer not found");
+            return response.text();
+        })
+        .then(html => {
+            document.getElementById("footer-placeholder").innerHTML = html;
+        })
+        .catch(error => console.error("Footer loading failed:", error));
+
+    // Show admin links only for users whose token identifies them as ADMIN.
+    (function showAdminLinks() {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        try {
+            const parts = token.split(".");
+            if (parts.length !== 3) return;
+
+            const payload = JSON.parse(
+                atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"))
+            );
+
+            if (payload.role === "ADMIN") {
+                const link = document.getElementById("adminNavLink");
+                if (link) link.hidden = false;
+            }
+        } catch (error) {
+            console.error("Could not read login token.");
+        }
+    })();
+
+    loadAllProducts();
+</script>
+
+</body>
+</html>

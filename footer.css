@@ -1,0 +1,111 @@
+/* FOOTER BASE */
+footer {
+    background: linear-gradient(135deg, #67bed9, #15406b); /* main gradient */
+    color: #fff;
+    padding: 50px 0 30px;
+    margin-top: 40px;
+}
+
+/* CONTAINER */
+.footer-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    max-width: 1100px;
+    margin: auto;
+    padding: 0 20px;
+}
+
+.footer-column {
+    width: 45%;
+}
+
+/* HEADINGS */
+.footer-column h3 {
+    font-size: 20px;
+    margin-bottom: 15px;
+    font-weight: 600;
+    color: #ffffff; /* ensures heading is readable */
+}
+
+/* TEXT & LINKS */
+.footer-column p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #e5e5e5; /* lighter shade for readability */
+}
+
+/* ARROW LINKS */
+.arrow-link {
+    display: block;
+    font-size: 15px;
+    margin-bottom: 8px;
+    color: #f2f2f2; /* subtle white */
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.arrow-link:hover {
+    color: #1da1f2; /* accent color on hover */
+    margin-left: 5px;
+}
+
+/* FOOTER LOGO CENTER */
+.footer-logo {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.footer-logo img {
+    width: 120px;
+}
+
+/* COPYRIGHT TEXT */
+.footer-bottom {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 14px;
+    color: #2a3036; /* slightly muted white for subtlety */
+}
+
+/* BUTTONS (if any in footer) */
+.footer-btn {
+    background-color: #1da1f2; /* accent button color */
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 10px;
+    transition: 0.3s;
+}
+
+.footer-btn:hover {
+    background-color: #0b2a4a; /* darker hover effect matching gradient */
+}
+
+/* ICONS (social or WhatsApp) */
+.footer-social img {
+    width: 30px;
+    margin-right: 10px;
+    filter: brightness(0) invert(1); /* makes icons white on dark gradient */
+    transition: 0.3s;
+}
+
+.footer-social img:hover {
+    filter: brightness(0) invert(0.6) sepia(1) saturate(5) hue-rotate(180deg); /* subtle color on hover */
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .footer-container {
+        flex-direction: column;
+        text-align: center;
+    }
+    .footer-column {
+        width: 100%;
+        margin-bottom: 30px;
+    }
+}

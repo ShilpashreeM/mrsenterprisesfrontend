@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>My Cart | MRS Enterprises</title>
+
+    <link rel="icon" type="image/png" href="images/MRS.png" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="footer.css" />
+  </head>
+
+  <body>
+    <header class="menu">
+      <img src="images/MRS.png" class="logo" alt="Company Logo" />
+
+      <nav class="desktop-nav">
+        <a href="index.html">Home</a>
+        <a href="about.html">About Us</a>
+        <a href="products.html">Our Products</a>
+        <a class="active" href="cart.html">🛒 Cart</a>
+        <a href="orders.html">📦 My Orders</a>
+        <a href="login.html" class="login-link">Login</a>
+        <a
+          href="#"
+          class="logout-link"
+          style="display: none"
+          onclick="
+            logout()
+            return false
+          "
+          >Logout</a
+        >
+        <a href="contact.html">Contact Us</a>
+      </nav>
+
+      <div class="hamburger" onclick="openMenu()">&#9776;</div>
+    </header>
+
+    <div id="mobileMenu" class="mobile-menu">
+      <div class="mobile-menu-header">
+        <img src="images/MRS.png" class="mobile-logo" />
+        <span class="close-btn" onclick="closeMenu()">✕</span>
+      </div>
+
+      <a href="index.html">Home</a>
+      <a href="about.html">About Us</a>
+      <a href="products.html">Our Products</a>
+      <a class="active" href="cart.html">🛒 Cart</a>
+      <a href="orders.html">📦 My Orders</a>
+      <a href="login.html" class="login-link">Login</a>
+      <a
+        href="#"
+        class="logout-link"
+        style="display: none"
+        onclick="
+          logout()
+          return false
+        "
+        >Logout</a
+      >
+      <a href="contact.html">Contact Us</a>
+    </div>
+
+    <section class="cart-section">
+      <div class="cart-container">
+        <h1>My Cart</h1>
+
+        <div id="cart-content">
+          <p class="cart-loading">Loading your cart...</p>
+        </div>
+      </div>
+    </section>
+
+    <div id="footer-placeholder"></div>
+
+    <script>
+      fetch('footer.html')
+        .then((res) => res.text())
+        .then((html) => {
+          document.getElementById('footer-placeholder').innerHTML = html
+        })
+    </script>
+
+    <script src="api.js"></script>
+
+    <script>
+      let currentCart = null
+
+      /* ================================
+   LOAD CART
+================================ */
+
+      async function loadCart() {
+        const token = localStorage.getItem('token')
+
+        const container = document.getElementById('cart-content')
+
+        if (!token) {
+          container.innerHTML = `
+            <div class="cart-empty">
+                <h2>Please login</h2>
+
+                <p>
+                    Login to view your cart.
+                </p>
+
+                <a
+                    href="login.html?returnUrl=${encodeURIComponent('cart.html')}"
+                    class="cart-primary-btn"
+                >
+                    Login
+                </a>
+            </div>
+        `
+
+          return
+        }
+
+        try {
+          const response = await fetch(`${API_BASE_URL}/cart`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+
+          const result = await response.json()
+
+          if (response.status === 401) {
+            localStorage.removeItem('token')
+
+            container.innerHTML = `
+                <div class="cart-empty">
+                    <h2>Session expired</h2>
+
+                    <p>
+                        Please login again.
+                    </p>
+
+                    <a
+                        href="login.html?returnUrl=${encodeURIComponent('cart.html')}"
+                        class="cart-primary-btn"
+                    >
+                        Login
+                    </a>
+                </div>
+            `
+
+            return
+          }
+
+          if (!response.ok) {
+            throw new Error(result.message || 'Unable to load cart')
+          }
+
+          currentCart = result.data || result.cart || result
+
+          renderCart()
+        } catch (error) {
+          console.error('Load cart error:', error)
+
+          container.innerHTML = `
+            <div class="cart-empty">
+                <h2>Unable to load cart</h2>
+
+                <p>
+                    Please try again.
+                </p>
+
+                <button
+                    class="cart-primary-btn"
+                    onclick="loadCart()"
+                >
+                    Try Again
+                </button>
+            </div>
+        `
+        }
+      }
+
+      /* ================================
+   RENDER CART
+================================ */
+
+      function renderCart() {
+        const container = document.getElementById('cart-content')
+
+        if (
+          !currentCart ||
+          !currentCart.items ||
+          currentCart.items.length === 0
+        ) {
+          container.innerHTML = `
+            <div class="cart-empty">
+                <h2>Your cart is empty</h2>
+                <p>Add some products to continue shopping.</p>
+                <a href="display-products.html" class="cart-primary-btn">
+                    Continue Shopping
+                </a>
+            </div>
+        `
+          return
+        }
+
+        const subtotal = Number(currentCart.totalAmount || 0)
+        const deliveryCharge = 1
+        const total = subtotal + deliveryCharge
+
+        container.innerHTML = `
+        <div class="cart-layout">
+            <div class="cart-items">
+                ${currentCart.items
+                  .map((item, index) => renderCartItem(item, index))
+                  .join('')}
+            </div>
+
+            <div class="cart-summary">
+                <h2>Order Summary</h2>
+
+                <div class="cart-summary-row">
+                    <span>Items</span>
+                    <span>${currentCart.items.reduce(
+           (total, item) => total + Number(item.quantity || 0),
+           0
+       )}</span>
+                </div>
+
+                <div class="cart-summary-row">
+                    <span>Subtotal</span>
+                    <strong>₹${subtotal.toFixed(2)}</strong>
+                </div>
+
+                <div class="cart-summary-row">
+                    <span>Delivery</span>
+                    <strong>₹${deliveryCharge.toFixed(2)}</strong>
+                </div>
+
+                <hr>
+
+                <div class="cart-total-row">
+                    <span>Total</span>
+                    <strong>₹${total.toFixed(2)}</strong>
+                </div>
+
+                <button
+                    class="cart-checkout-btn"
+                    onclick="proceedToCheckout()"
+                >
+                    Proceed to Checkout
+                </button>
+            </div>
+        </div>
+    `
+      }
+
+      /* ================================
+   CART ITEM
+================================ */
+
+
+function renderCartItem(item, index) {
+const product = item.productId || {};
+const productName = product.name || "Product";
+
+const image =
+    product.thumbnail ||
+    product.images?.[0] ||
+    "images/products/fall_back.png";
+
+const variation = product.variations?.find(
+    variation => variation.sku === item.sku
+);
+
+const attributes = variation?.attributes || {};
+
+// Display size only once, plus the unit.
+const specification =
+    attributes.specification || attributes.size || "";
+
+const unit = attributes.unit || "";
+
+const attributeText = [
+    specification,
+    unit
+].filter(Boolean).join(" / ");
+
+// Use the variation's MRP and selling price.
+const mrp = Number(variation?.mrp);
+const sellingPrice = Number(item.price);
+
+const priceHtml =
+    Number.isFinite(mrp) && mrp > sellingPrice
+        ? `
+            <del class="cart-item-mrp">
+                ₹${mrp.toFixed(2)}
+            </del>
+            <strong class="cart-item-selling-price">
+                ₹${sellingPrice.toFixed(2)}
+            </strong>
+          `
+        : `
+            <strong class="cart-item-selling-price">
+                ₹${sellingPrice.toFixed(2)}
+            </strong>
+          `;
+
+
+return `
+    <div class="cart-item">
+        <div class="cart-item-image">
+            <img
+                src="${image}"
+                alt="${productName}"
+                onerror="this.src='images/MRS.png'"
+            >
+        </div>
+
+        <div class="cart-item-details">
+            <h3>${productName}</h3>
+
+            ${
+                attributeText
+                    ? `<p class="cart-item-variation">${attributeText}</p>`
+                    : ""
+            }
+
+            <p class="cart-item-price">
+                ${priceHtml}
+            </p>
+
+            <div class="cart-item-actions">
+                <div class="cart-quantity">
+                    <button onclick="changeCartQuantity(${index}, -1)">−</button>
+                    <span>${item.quantity}</span>
+                    <button onclick="changeCartQuantity(${index}, 1)">+</button>
+                </div>
+
+                <button
+                    class="cart-remove-btn"
+                    onclick="removeCartItem(${index})"
+                >
+                    Remove
+                </button>
+            </div>
+        </div>
+
+        <div class="cart-item-total">
+            ₹${(sellingPrice * item.quantity).toFixed(2)}
+        </div>
+    </div>
+`;
+}
+
+
+      /* ================================
+   CHANGE QUANTITY
+================================ */
+
+      async function changeCartQuantity(index, change) {
+        const item = currentCart.items[index]
+
+        let newQuantity = item.quantity + change
+
+        if (newQuantity < 1) {
+          await removeCartItem(index)
+
+          return
+        }
+
+        await updateCartQuantity(item, newQuantity)
+      }
+
+      /* ================================
+   UPDATE QUANTITY
+================================ */
+
+      async function updateCartQuantity(item, quantity) {
+        const token = localStorage.getItem('token')
+
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/cart/items/${encodeURIComponent(item.productId._id)}/${encodeURIComponent(item.sku)}`,
+            {
+              method: 'PUT',
+
+              headers: {
+                'Content-Type': 'application/json',
+
+                Authorization: `Bearer ${token}`,
+              },
+
+              body: JSON.stringify({
+                quantity,
+              }),
+            },
+          )
+
+          const result = await response.json()
+
+          if (!response.ok) {
+            throw new Error(result.message || 'Unable to update quantity')
+          }
+
+          currentCart = result.data || result.cart || result
+
+          renderCart()
+        } catch (error) {
+          console.error('Update cart error:', error)
+
+          alert(error.message || 'Unable to update quantity.')
+        }
+      }
+
+      /* ================================
+   REMOVE ITEM
+================================ */
+
+      async function removeCartItem(index) {
+        const item = currentCart.items[index]
+
+        const token = localStorage.getItem('token')
+
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/cart/items/${encodeURIComponent(item.productId._id)}/${encodeURIComponent(item.sku)}`,
+            {
+              method: 'DELETE',
+
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          )
+
+          const result = await response.json()
+
+          if (!response.ok) {
+            throw new Error(result.message || 'Unable to remove item')
+          }
+
+          currentCart = result.data || result.cart || result
+
+          renderCart()
+        } catch (error) {
+          console.error('Remove cart item error:', error)
+
+          alert(error.message || 'Unable to remove item.')
+        }
+      }
+
+      /* ================================
+   CHECKOUT
+================================ */
+
+      function proceedToCheckout() {
+        window.location.href = 'checkout.html'
+      }
+
+      /* ================================
+   MOBILE MENU
+================================ */
+
+      function openMenu() {
+        document.getElementById('mobileMenu').classList.add('open')
+      }
+
+      function closeMenu() {
+        document.getElementById('mobileMenu').classList.remove('open')
+      }
+
+      loadCart()
+    </script>
+  </body>
+</html>

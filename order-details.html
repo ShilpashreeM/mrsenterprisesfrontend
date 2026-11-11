@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Order Details | MRS Enterprises</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="footer.css"
+    >
+
+</head>
+
+
+<body>
+
+
+  <header class="menu">
+
+      <img
+          src="images/MRS.png"
+          class="logo"
+          alt="MRS Enterprises"
+      >
+
+      <nav class="desktop-nav">
+
+          <a href="index.html">
+              Home
+          </a>
+
+          <a href="about.html">
+              About Us
+          </a>
+
+          <a href="products.html">
+              Our Products
+          </a>
+
+          <a href="cart.html">
+              🛒 Cart
+          </a>
+
+          <a href="contact.html">
+              Contact Us
+          </a>
+
+      </nav>
+
+      <div class="hamburger" onclick="openMenu()">&#9776;</div>
+
+  </header>
+
+
+  <div id="mobileMenu" class="mobile-menu">
+
+      <div class="mobile-menu-header">
+
+          <img
+              src="images/MRS.png"
+              class="mobile-logo"
+              alt="MRS Enterprises"
+          >
+
+          <span
+              class="close-btn"
+              onclick="closeMenu()"
+          >
+              ✕
+          </span>
+
+      </div>
+
+      <a href="index.html">Home</a>
+      <a href="about.html">About Us</a>
+      <a href="products.html">Our Products</a>
+      <a href="cart.html">🛒 Cart</a>
+      <a href="orders.html">📦 My Orders</a>
+      <a href="login.html" class="login-link">Login</a>
+      <a href="#" class="logout-link" style="display: none;" onclick="logout(); return false;">Logout</a>
+      <a href="contact.html">Contact Us</a>
+
+  </div>
+
+
+
+<section class="order-details-section">
+
+    <div class="order-details-container">
+
+        <h1>
+            Order Details
+        </h1>
+
+
+        <div id="order-details">
+
+            <p class="order-loading">
+                Loading order details...
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<div id="footer-placeholder"></div>
+
+
+
+<script>
+
+fetch("footer.html")
+    .then(res => res.text())
+    .then(html => {
+
+        document
+            .getElementById(
+                "footer-placeholder"
+            )
+            .innerHTML = html;
+
+    });
+
+</script>
+
+
+
+<script src="api.js"></script>
+
+
+
+<script>
+
+const token =
+    localStorage.getItem("token");
+
+
+/* ================================
+   AUTH
+================================ */
+
+if (!token) {
+
+    window.location.href =
+        "login.html?returnUrl=" +
+        encodeURIComponent(
+            "orders.html"
+        );
+
+}
+
+
+/* ================================
+   GET ORDER ID
+================================ */
+
+const params =
+    new URLSearchParams(
+        window.location.search
+    );
+
+
+const orderId =
+    params.get("id");
+
+
+if (!orderId) {
+
+    document.getElementById(
+        "order-details"
+    ).innerHTML = `
+
+        <div class="order-error">
+
+            <h2>
+                Order not found
+            </h2>
+
+            <p>
+                No order ID was provided.
+            </p>
+
+            <a
+                href="orders.html"
+                class="back-orders-btn"
+            >
+                Back to My Orders
+            </a>
+
+        </div>
+
+    `;
+
+} else {
+
+    loadOrderDetails();
+
+}
+
+
+/* ================================
+   LOAD ORDER
+================================ */
+
+async function loadOrderDetails() {
+
+    const container =
+        document.getElementById(
+            "order-details"
+        );
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_BASE_URL}/orders/${orderId}`,
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+
+        const result =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                result.message ||
+                "Unable to load order"
+            );
+
+        }
+
+
+        const order =
+            result.data ||
+            result.order ||
+            result;
+
+
+        renderOrder(order);
+
+
+    } catch (error) {
+
+        console.error(
+            "Load order details error:",
+            error
+        );
+
+
+        container.innerHTML = `
+
+            <div class="order-error">
+
+                <h2>
+                    Unable to load order
+                </h2>
+
+                <p>
+                    ${error.message}
+                </p>
+
+                <a
+                    href="orders.html"
+                    class="back-orders-btn"
+                >
+                    Back to My Orders
+                </a>
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/* ================================
+   RENDER ORDER
+================================ */
+
+function renderOrder(order) {
+
+    const container =
+        document.getElementById(
+            "order-details"
+        );
+
+
+    const orderDate =
+        order.createdAt
+            ? new Date(
+                order.createdAt
+            ).toLocaleString(
+                "en-IN",
+                {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            )
+            : "-";
+
+
+    container.innerHTML = `
+
+        <!-- ORDER HEADER -->
+
+        <div class="order-detail-card">
+
+            <div class="order-detail-header">
+
+                <div>
+
+                    <h2>
+                        ${order.orderNumber || "-"}
+                    </h2>
+
+                    <p>
+                        Placed on ${orderDate}
+                    </p>
+
+                </div>
+
+
+                <span
+                    class="order-detail-status ${getStatusClass(
+                        order.orderStatus
+                    )}"
+                >
+                    ${formatStatus(
+                        order.orderStatus
+                    )}
+                </span>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ORDER ITEMS -->
+
+        <div class="order-detail-card">
+
+            <h2>
+                Order Items
+            </h2>
+
+
+            <div class="order-items">
+
+                ${
+                    order.items &&
+                    order.items.length
+                        ? order.items.map(
+                            item => `
+
+                            <div
+                                class="order-detail-item"
+                            >
+
+                                <div>
+
+                                    <strong>
+                                        ${
+                                            item.productName ||
+                                            item.productId?.name ||
+                                            "Product"
+                                        }
+                                    </strong>
+
+                                    <p>
+                                        Quantity:
+                                        ${item.quantity}
+                                    </p>
+
+                                </div>
+
+
+                                <div
+                                    class="order-item-price"
+                                >
+
+                                    <strong>
+                                        ₹${item.total}
+                                    </strong>
+
+                                    <small>
+                                        ₹${item.price}
+                                        each
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+                        `
+                        ).join("")
+                        : `
+                            <p>
+                                No items found.
+                            </p>
+                        `
+                }
+
+            </div>
+
+        </div>
+
+
+
+        <!-- DELIVERY ADDRESS -->
+
+        <div class="order-detail-card">
+
+            <h2>
+                Delivery Address
+            </h2>
+
+
+            <div class="order-address">
+
+                <strong>
+                    ${
+                        order.shippingAddress?.name ||
+                        "-"
+                    }
+                </strong>
+
+                <p>
+                    ${
+                        order.shippingAddress?.phone ||
+                        "-"
+                    }
+                </p>
+
+                <p>
+                    ${
+                        order.shippingAddress?.addressLine1 ||
+                        ""
+                    }
+
+                    ${
+                        order.shippingAddress?.addressLine2
+                            ? ", " +
+                              order.shippingAddress.addressLine2
+                            : ""
+                    }
+                </p>
+
+                <p>
+
+                    ${
+                        order.shippingAddress?.city ||
+                        ""
+                    },
+
+                    ${
+                        order.shippingAddress?.state ||
+                        ""
+                    }
+
+                    -
+
+                    ${
+                        order.shippingAddress?.pincode ||
+                        ""
+                    }
+
+                </p>
+
+
+                ${
+                    order.shippingAddress?.landmark
+                        ? `
+                            <p>
+                                Landmark:
+                                ${order.shippingAddress.landmark}
+                            </p>
+                        `
+                        : ""
+                }
+
+            </div>
+
+        </div>
+
+
+
+        <!-- PAYMENT -->
+
+        <div class="order-detail-card">
+
+            <h2>
+                Payment
+            </h2>
+
+
+            <div class="order-payment-info">
+
+                <div>
+
+                    <span>
+                        Payment Method
+                    </span>
+
+                    <strong>
+                        ${
+                            order.paymentMethod ||
+                            "-"
+                        }
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        Payment Status
+                    </span>
+
+                    <strong>
+                        ${
+                            formatStatus(
+                                order.paymentStatus
+                            )
+                        }
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ORDER SUMMARY -->
+
+        <div class="order-detail-card">
+
+            <h2>
+                Order Summary
+            </h2>
+
+
+            <div class="order-summary-row">
+
+                <span>
+                    Subtotal
+                </span>
+
+                <strong>
+                    ₹${order.subtotal || 0}
+                </strong>
+
+            </div>
+
+
+            <div class="order-summary-row">
+
+                <span>
+                    Delivery
+                </span>
+
+                <strong>
+                    ${
+                        order.deliveryCharge
+                            ? "₹" +
+                              order.deliveryCharge
+                            : "Free"
+                    }
+                </strong>
+
+            </div>
+
+
+            <div class="order-summary-total">
+
+                <span>
+                    Total
+                </span>
+
+                <strong>
+                    ₹${order.totalAmount || 0}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="order-details-actions">
+
+            <a
+                href="orders.html"
+                class="back-orders-btn"
+            >
+                ← Back to My Orders
+            </a>
+
+            <a
+                href="products.html"
+                class="continue-shopping-btn"
+            >
+                Continue Shopping
+            </a>
+
+        </div>
+
+    `;
+
+}
+
+
+/* ================================
+   HELPERS
+================================ */
+
+function formatStatus(status) {
+
+    if (!status) {
+        return "-";
+    }
+
+    return status
+        .toLowerCase()
+        .replace(
+            /\b\w/g,
+            char => char.toUpperCase()
+        );
+
+}
+
+
+function getStatusClass(status) {
+
+    if (!status) {
+        return "";
+    }
+
+    return status
+        .toLowerCase()
+        .replace(
+            /\s+/g,
+            "-"
+        );
+
+}
+
+</script>
+
+
+</body>
+
+</html>

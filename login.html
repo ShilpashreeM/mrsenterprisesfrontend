@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login | MRS Enterprises</title>
+
+    <link rel="icon" type="image/png" href="images/MRS.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="footer.css">
+</head>
+
+<body>
+
+<header class="menu">
+    <img src="images/MRS.png" class="logo" alt="Company Logo">
+
+    <nav class="desktop-nav">
+        <a href="index.html">Home</a>
+        <a href="about.html">About Us</a>
+        <a href="products.html">Our Products</a>
+        <a href="contact.html">Contact Us</a>
+    </nav>
+
+    <div class="hamburger" onclick="openMenu()">&#9776;</div>
+</header>
+
+<div id="mobileMenu" class="mobile-menu">
+    <div class="mobile-menu-header">
+        <img src="images/MRS.png" class="mobile-logo">
+        <span class="close-btn" onclick="closeMenu()">✕</span>
+    </div>
+
+    <a href="index.html">Home</a>
+    <a href="about.html">About Us</a>
+    <a href="products.html">Our Products</a>
+    <a href="contact.html">Contact Us</a>
+</div>
+
+
+<section class="auth-section">
+
+    <div class="auth-card">
+
+        <div class="auth-logo">
+            <img src="images/MRS.png" alt="MRS Enterprises">
+        </div>
+
+        <h1>Welcome Back</h1>
+
+        <p class="auth-subtitle">
+            Login to your MRS Enterprises account
+        </p>
+
+
+        <form id="login-form">
+
+            <div class="auth-field">
+
+                <label for="login-phone">
+                    Phone
+                </label>
+
+                <input
+                    type="tel"
+                    id="login-phone"
+                    placeholder="Enter your phone number"
+                    required
+                >
+
+            </div>
+
+
+
+  <div class="auth-field">
+
+      <label for="login-password">
+          Password
+      </label>
+
+      <input
+          type="password"
+          id="login-password"
+          placeholder="Enter your password"
+          required
+      >
+
+      <div style="text-align: right; margin-top: 8px;">
+          <a href="forgot-password.html"
+             style="color: #0b5cab; font-size: 14px; text-decoration: none;">
+              Forgot Password?
+          </a>
+      </div>
+
+  </div>
+
+
+
+            <button
+                type="submit"
+                class="auth-submit-btn"
+            >
+                Login
+            </button>
+
+        </form>
+
+
+        <p
+            id="login-message"
+            class="auth-message"
+        ></p>
+
+
+        <p class="auth-switch">
+
+            Don't have an account?
+
+            <a href="register.html">
+                Create Account
+            </a>
+
+        </p>
+
+    </div>
+
+</section>
+
+
+<div id="footer-placeholder"></div>
+
+
+<script>
+fetch("footer.html")
+    .then(res => res.text())
+    .then(html => {
+        document.getElementById("footer-placeholder").innerHTML = html;
+    });
+</script>
+
+
+<script src="api.js"></script>
+
+<script>
+
+const loginForm =
+    document.getElementById("login-form");
+
+const loginMessage =
+    document.getElementById("login-message");
+
+
+const returnUrl =
+    new URLSearchParams(
+        window.location.search
+    ).get("returnUrl");
+
+
+loginForm.addEventListener(
+    "submit",
+    async function(event) {
+
+        event.preventDefault();
+
+
+        const phone =
+            document
+                .getElementById("login-phone")
+                .value
+                .trim();
+
+
+        const password =
+            document
+                .getElementById("login-password")
+                .value;
+
+
+        loginMessage.textContent =
+            "Logging in...";
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `${API_BASE_URL}/auth/login`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            phone,
+                            password
+                        })
+                    }
+                );
+
+
+            const result =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    result.message ||
+                    "Login failed"
+                );
+            }
+
+
+            /*
+             * Save JWT
+             *
+             * We handle the possible
+             * response shapes here so
+             * the frontend is not tightly
+             * coupled to one response format.
+             */
+
+            const token =
+                result.token ||
+                result.data?.token ||
+                result.data?.accessToken ||
+                result.accessToken;
+
+
+            if (!token) {
+
+                throw new Error(
+                    "Login successful but token was not returned."
+                );
+            }
+
+
+            localStorage.setItem(
+                "token",
+                token
+            );
+
+
+            loginMessage.textContent =
+                "Login successful. Redirecting...";
+
+
+            setTimeout(() => {
+
+                if (returnUrl) {
+
+                    window.location.href =
+                        decodeURIComponent(returnUrl);
+
+                } else {
+
+                    window.location.href =
+                        "index.html";
+
+                }
+
+            }, 500);
+
+
+        } catch (error) {
+
+            console.error(
+                "Login error:",
+                error
+            );
+
+            loginMessage.textContent =
+                error.message ||
+                "Unable to login.";
+        }
+
+    }
+);
+
+
+function openMenu() {
+
+    document
+        .getElementById("mobileMenu")
+        .classList.add("open");
+}
+
+
+function closeMenu() {
+
+    document
+        .getElementById("mobileMenu")
+        .classList.remove("open");
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,278 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmed | MRS Enterprises</title>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .success-page {
+            min-height: 65vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background: #f4f7fb;
+        }
+
+        .success-card {
+            width: 100%;
+            max-width: 620px;
+            padding: 42px 32px;
+            background: #fff;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(11, 42, 74, 0.12);
+        }
+
+        .success-icon {
+            width: 76px;
+            height: 76px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: #e4f8ed;
+            color: #198754;
+            font-size: 42px;
+            font-weight: bold;
+        }
+
+        .success-card h1 {
+            color: #0b2a4a;
+            font-size: 30px;
+            margin-bottom: 12px;
+        }
+
+        .success-message {
+            color: #586575;
+            line-height: 1.7;
+            margin-bottom: 28px;
+        }
+
+        .order-info {
+            background: #f5f8fc;
+            border: 1px solid #e1e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: left;
+            margin-bottom: 26px;
+        }
+
+        .order-info div {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .order-info div:last-child {
+            border-bottom: none;
+        }
+
+        .order-info span {
+            color: #586575;
+        }
+
+        .order-info strong {
+            color: #0b2a4a;
+            text-align: right;
+            overflow-wrap: anywhere;
+        }
+
+        .success-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .success-actions a {
+            display: inline-block;
+            padding: 13px 20px;
+            border-radius: 7px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .primary-action {
+            background: #0b2a4a;
+            color: #fff;
+        }
+
+        .secondary-action {
+            border: 1px solid #0b2a4a;
+            color: #0b2a4a;
+        }
+
+        .success-note {
+            margin-top: 22px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        @media (max-width: 480px) {
+            .success-card {
+                padding: 30px 18px;
+            }
+
+            .success-card h1 {
+                font-size: 25px;
+            }
+
+            .order-info div {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .order-info strong {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Keep your existing website header here if it is shared across pages. -->
+
+    <main class="success-page">
+        <section class="success-card">
+            <div class="success-icon">&#10003;</div>
+
+            <h1>Order Placed Successfully!</h1>
+
+            <p class="success-message">
+                Thank you for shopping with MRS Enterprises.
+                Your order has been received successfully.
+            </p>
+
+            <div class="order-info">
+                <div>
+                    <span>Order Number</span>
+                    <strong id="order-number">Loading...</strong>
+                </div>
+
+                <div>
+                    <span>Payment Method</span>
+                    <strong id="payment-method">Loading...</strong>
+                </div>
+
+                <div>
+                    <span>Payment Status</span>
+                    <strong id="payment-status">Loading...</strong>
+                </div>
+
+                <div>
+                    <span>Order Total</span>
+                    <strong id="order-total">Loading...</strong>
+                </div>
+            </div>
+
+            <div class="success-actions">
+                <a href="orders.html" class="primary-action">
+                    View My Orders
+                </a>
+
+                <a href="products.html" class="secondary-action">
+                    Continue Shopping
+                </a>
+            </div>
+
+            <p class="success-note">
+                You can view your order details anytime from My Orders.
+            </p>
+        </section>
+    </main>
+
+    <!-- Keep your existing website footer here if it is shared across pages. -->
+
+  <script src="api.js"></script>
+  <script>
+      document.addEventListener("DOMContentLoaded", async function () {
+          const token = localStorage.getItem("token");
+          const params = new URLSearchParams(window.location.search);
+          const orderNumber = params.get("orderNumber");
+
+          const orderNumberElement = document.getElementById("order-number");
+          const paymentMethodElement = document.getElementById("payment-method");
+          const paymentStatusElement = document.getElementById("payment-status");
+          const orderTotalElement = document.getElementById("order-total");
+
+          if (!token) {
+              window.location.href = "login.html";
+              return;
+          }
+
+          if (!orderNumber) {
+              orderNumberElement.textContent = "Not provided";
+              paymentMethodElement.textContent = "—";
+              paymentStatusElement.textContent = "—";
+              orderTotalElement.textContent = "—";
+              return;
+          }
+
+          // Display the order number immediately.
+          orderNumberElement.textContent = orderNumber;
+          paymentMethodElement.textContent = "Loading...";
+          paymentStatusElement.textContent = "Loading...";
+          orderTotalElement.textContent = "Loading...";
+
+          try {
+              // Use the existing My Orders endpoint.
+              const response = await fetch(`${API_BASE_URL}/orders`, {
+                  headers: {
+                      Authorization: `Bearer ${token}`
+                  }
+              });
+
+              const result = await response.json();
+
+              if (!response.ok || !result.success) {
+                  throw new Error(result.message || "Unable to retrieve orders");
+              }
+
+              const orders = Array.isArray(result.data) ? result.data : [];
+
+              const order = orders.find(
+                  item => item.orderNumber === orderNumber
+              );
+
+              if (!order) {
+                  paymentMethodElement.textContent = "—";
+                  paymentStatusElement.textContent = "Order not found";
+                  orderTotalElement.textContent = "—";
+                  return;
+              }
+
+              paymentMethodElement.textContent =
+                  order.paymentMethod === "COD"
+                      ? "Cash on Delivery"
+                      : order.paymentMethod === "ONLINE"
+                          ? "Online Payment"
+                          : order.paymentMethod || "—";
+
+              paymentStatusElement.textContent =
+                  order.paymentStatus || "—";
+
+              orderTotalElement.textContent =
+                  "₹" + Number(order.totalAmount || 0).toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                  });
+
+          } catch (error) {
+              console.error("Failed to load order details:", error);
+
+              paymentMethodElement.textContent = "—";
+              paymentStatusElement.textContent = "Unable to load";
+              orderTotalElement.textContent = "—";
+          }
+      });
+  </script>
+
+</body>
+</html>

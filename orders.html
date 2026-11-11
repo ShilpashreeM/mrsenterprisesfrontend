@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Orders | MRS Enterprises</title>
+
+    <meta
+        name="description"
+        content="View your MRS Enterprises orders and order details."
+    >
+
+    <link rel="icon" type="image/png" href="images/MRS.png">
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="footer.css">
+</head>
+
+<body>
+
+<header class="menu">
+
+    <img
+        src="images/MRS.png"
+        class="logo"
+        alt="MRS Enterprises"
+    >
+
+    <nav class="desktop-nav">
+        <a href="index.html">Home</a>
+        <a href="about.html">About Us</a>
+        <a href="products.html">Our Products</a>
+        <a href="cart.html">🛒 Cart</a>
+        <a class="active" href="orders.html">📦 My Orders</a>
+        <a href="login.html" class="login-link">Login</a>
+        <a href="#" class="logout-link" style="display: none;" onclick="logout(); return false;">Logout</a>
+        <a href="contact.html">Contact Us</a>
+    </nav>
+
+    <div
+        class="hamburger"
+        onclick="openMenu()"
+    >
+        &#9776;
+    </div>
+
+</header>
+
+
+<div id="mobileMenu" class="mobile-menu">
+
+    <div class="mobile-menu-header">
+
+        <img
+            src="images/MRS.png"
+            class="mobile-logo"
+        >
+
+        <span
+            class="close-btn"
+            onclick="closeMenu()"
+        >
+            ✕
+        </span>
+
+    </div>
+
+    <a href="index.html">Home</a>
+    <a href="about.html">About Us</a>
+    <a href="products.html">Our Products</a>
+    <a href="cart.html">🛒 Cart</a>
+    <a class="active" href="orders.html">📦 My Orders</a>
+    <a href="login.html" class="login-link">Login</a>
+    <a href="#" class="logout-link" style="display: none;" onclick="logout(); return false;">Logout</a>
+    <a href="contact.html">Contact Us</a>
+
+</div>
+
+
+<section class="orders-section">
+
+    <div class="orders-container">
+
+        <h1>My Orders</h1>
+
+        <p class="orders-subtitle">
+            View your recent orders and order details.
+        </p>
+
+
+        <div id="orders-list">
+
+            <p class="orders-loading">
+                Loading your orders...
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<div id="footer-placeholder"></div>
+
+
+<!-- FOOTER -->
+
+<script>
+
+fetch("footer.html")
+    .then(res => res.text())
+    .then(html => {
+
+        document
+            .getElementById("footer-placeholder")
+            .innerHTML = html;
+
+    });
+
+</script>
+
+
+<!-- API -->
+
+<script src="api.js"></script>
+
+
+<script>
+
+const token =
+    localStorage.getItem("token");
+
+
+/* ================================
+   AUTH
+================================ */
+
+if (!token) {
+
+    window.location.href =
+        "login.html?returnUrl=" +
+        encodeURIComponent("orders.html");
+
+}
+
+
+/* ================================
+   LOAD ORDERS
+================================ */
+
+async function loadOrders() {
+
+    const container =
+        document.getElementById(
+            "orders-list"
+        );
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_BASE_URL}/orders`,
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+
+        const result =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                result.message ||
+                "Unable to load orders"
+            );
+
+        }
+
+
+        const orders =
+            result.data ||
+            result.orders ||
+            result;
+
+
+        if (
+            !Array.isArray(orders) ||
+            orders.length === 0
+        ) {
+
+            container.innerHTML = `
+
+                <div class="no-orders">
+
+                    <h2>
+                        No Orders Yet
+                    </h2>
+
+                    <p>
+                        You haven't placed any orders yet.
+                    </p>
+
+                    <a
+                        href="products.html"
+                        class="orders-shop-btn"
+                    >
+                        Start Shopping
+                    </a>
+
+                </div>
+
+            `;
+
+            return;
+        }
+
+
+        renderOrders(orders);
+
+
+    } catch (error) {
+
+        console.error(
+            "Load orders error:",
+            error
+        );
+
+
+        container.innerHTML = `
+
+            <div class="orders-error">
+
+                <p>
+                    ${error.message ||
+                    "Unable to load your orders."}
+                </p>
+
+                <button
+                    onclick="loadOrders()"
+                >
+                    Try Again
+                </button>
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/* ================================
+   RENDER ORDERS
+================================ */
+
+function renderOrders(orders) {
+
+    const container =
+        document.getElementById(
+            "orders-list"
+        );
+
+
+    container.innerHTML = orders
+        .map(order => {
+
+            const orderDate =
+                order.createdAt
+                    ? new Date(
+                        order.createdAt
+                    ).toLocaleDateString(
+                        "en-IN",
+                        {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric"
+                        }
+                    )
+                    : "-";
+
+
+            const itemCount =
+                order.items?.reduce(
+                    (
+                        total,
+                        item
+                    ) =>
+                        total +
+                        Number(
+                            item.quantity || 0
+                        ),
+                    0
+                ) || 0;
+
+
+            return `
+
+                <div class="order-card">
+
+                    <div class="order-card-header">
+
+                        <div>
+
+                            <h2>
+                                ${order.orderNumber || "-"}
+                            </h2>
+
+                            <p>
+                                ${orderDate}
+                            </p>
+
+                        </div>
+
+
+                        <span
+                            class="order-status ${getStatusClass(
+                                order.orderStatus
+                            )}"
+                        >
+                            ${formatStatus(
+                                order.orderStatus
+                            )}
+                        </span>
+
+                    </div>
+
+
+                    <div class="order-card-body">
+
+                        <div class="order-info">
+
+                            <span>
+                                Items
+                            </span>
+
+                            <strong>
+                                ${itemCount}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="order-info">
+
+                            <span>
+                                Payment
+                            </span>
+
+                            <strong>
+                                ${formatStatus(
+                                    order.paymentStatus
+                                )}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="order-info">
+
+                            <span>
+                                Payment Method
+                            </span>
+
+                            <strong>
+                                ${order.paymentMethod || "-"}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="order-info">
+
+                            <span>
+                                Total
+                            </span>
+
+                            <strong>
+                                ₹${order.totalAmount || 0}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="order-card-footer">
+
+                        <a
+                            href="order-details?id=${encodeURIComponent(
+                                order._id
+                            )}"
+                            class="view-order-btn"
+                        >
+                            View Details
+                        </a>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        })
+        .join("");
+
+}
+
+
+/* ================================
+   STATUS
+================================ */
+
+function formatStatus(status) {
+
+    if (!status) {
+        return "-";
+    }
+
+    return status
+        .toLowerCase()
+        .replace(
+            /\b\w/g,
+            char => char.toUpperCase()
+        );
+
+}
+
+
+function getStatusClass(status) {
+
+    if (!status) {
+        return "";
+    }
+
+    return status
+        .toLowerCase()
+        .replace(
+            /\s+/g,
+            "-"
+        );
+
+}
+
+
+/* ================================
+   MOBILE MENU
+================================ */
+
+function openMenu() {
+
+    document
+        .getElementById("mobileMenu")
+        .classList.add("open");
+
+}
+
+
+function closeMenu() {
+
+    document
+        .getElementById("mobileMenu")
+        .classList.remove("open");
+
+}
+
+
+/* ================================
+   LOAD
+================================ */
+
+loadOrders();
+
+</script>
+
+</body>
+
+</html>

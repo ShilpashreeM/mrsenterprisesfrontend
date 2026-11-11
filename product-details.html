@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Product Details | MRS Enterprises</title>
+
+    <link rel="icon" type="image/png" href="images/MRS.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="footer.css">
+</head>
+
+<body>
+
+<header class="menu">
+    <img src="images/MRS.png" class="logo" alt="Company Logo">
+
+    <nav class="desktop-nav">
+        <a href="index.html">Home</a>
+        <a href="about.html">About Us</a>
+        <a href="products.html">Our Products</a>
+        <a href="cart.html">🛒 Cart</a>
+        <a href="orders.html">📦 My Orders</a>
+        <a href="login.html" class="login-link">Login</a>
+        <a href="#" class="logout-link" style="display: none;" onclick="logout(); return false;">Logout</a>
+        <a href="contact.html">Contact Us</a>
+    </nav>
+
+    <div class="hamburger" onclick="openMenu()">&#9776;</div>
+</header>
+
+<div id="mobileMenu" class="mobile-menu">
+    <div class="mobile-menu-header">
+        <img src="images/MRS.png" class="mobile-logo">
+        <span class="close-btn" onclick="closeMenu()">✕</span>
+    </div>
+
+    <a href="index.html">Home</a>
+    <a href="about.html">About Us</a>
+    <a href="products.html">Our Products</a>
+    <a href="cart.html">🛒 Cart</a>
+    <a href="orders.html">📦 My Orders</a>
+    <a href="login.html" class="login-link">Login</a>
+    <a href="#" class="logout-link" style="display: none;" onclick="logout(); return false;">Logout</a>
+    <a href="contact.html">Contact Us</a>
+</div>
+
+
+<!-- PRODUCT DETAILS -->
+
+<div id="toast" class="toast"></div>
+
+<section class="product-details-section">
+
+    <div id="product-details-container">
+        <p class="product-details-loading">
+            Loading product...
+        </p>
+    </div>
+
+</section>
+
+
+<!-- Footer -->
+
+<div id="footer-placeholder"></div>
+
+<script>
+fetch("footer.html")
+    .then(res => res.text())
+    .then(html => {
+        document.getElementById("footer-placeholder").innerHTML = html;
+    });
+</script>
+
+
+<!-- WhatsApp -->
+
+<a href="https://wa.me/919353035318"
+   class="whatsapp"
+   target="_blank">
+
+    <img src="images/whatsapp.png" alt="WhatsApp">
+
+</a>
+
+<a href="tel:+919353035318"
+   class="whatsapp1"
+   target="_blank">
+
+    <img src="images/phone-call.png" alt="call">
+
+</a>
+
+
+<script src="api.js"></script>
+
+<script>
+
+let selectedVariation = null;
+let currentProduct = null;
+
+
+/* Get product ID from URL */
+
+const hashParams = new URLSearchParams(
+    window.location.hash.substring(1)
+);
+
+const productId = hashParams.get("id");
+
+/* Load product */
+
+async function loadProduct() {
+
+    const container =
+        document.getElementById(
+            "product-details-container"
+        );
+
+    if (!productId) {
+
+        container.innerHTML = `
+            <p class="product-details-error">
+                Product not found.
+            </p>
+        `;
+
+        return;
+    }
+
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE_URL}/products/${productId}`
+        );
+
+
+        if (!response.ok) {
+            throw new Error(
+                "Failed to load product"
+            );
+        }
+
+
+        const result = await response.json();
+
+
+        currentProduct =
+            result.data ||
+            result.product ||
+            result;
+
+
+        if (!currentProduct) {
+            throw new Error(
+                "Product not found"
+            );
+        }
+
+
+        renderProduct(currentProduct);
+
+
+    } catch (error) {
+
+        console.error(
+            "Error loading product:",
+            error
+        );
+
+        container.innerHTML = `
+            <p class="product-details-error">
+                Unable to load product.
+            </p>
+        `;
+    }
+}
+
+
+/* Render product */
+
+function renderProduct(product) {
+
+    const container =
+        document.getElementById(
+            "product-details-container"
+        );
+
+
+    const variations =
+        product.variations || [];
+
+
+    const activeVariations =
+        variations.filter(
+            variation =>
+                variation.isActive !== false
+        );
+
+
+    const firstVariation =
+        activeVariations[0];
+
+
+    if (firstVariation) {
+        selectedVariation =
+            firstVariation;
+    }
+
+
+    const image =
+        product.thumbnail ||
+        product.images?.[0] ||
+        "images/products/fall_back.png";
+
+
+    container.innerHTML = `
+
+        <div class="product-details-card">
+
+            <div class="product-details-image-section">
+
+                <img
+                    id="product-main-image"
+                    src="${image}"
+                    alt="${product.name}"
+                    class="product-details-image"
+                    onerror="this.src='images/MRS.png'"
+                >
+
+            </div>
+
+
+            <div class="product-details-info">
+
+                <p class="product-details-brand">
+                    ${product.brand || ""}
+                </p>
+
+                <h1>
+                    ${product.name}
+                </h1>
+
+
+                <p class="product-details-description">
+                    ${product.description || ""}
+                </p>
+
+
+                ${
+                    activeVariations.length > 0
+                    ? `
+
+                    <div class="variation-section">
+
+                        <h3>
+                            Select Variation
+                        </h3>
+
+                        <div
+                            id="variation-options"
+                            class="variation-options"
+                        >
+
+                            ${activeVariations
+                                .map(
+                                    (
+                                        variation,
+                                        index
+                                    ) => {
+
+
+const attributes = variation.attributes || {};
+
+const specification =
+    attributes.specification || attributes.size || "";
+
+const unit = attributes.unit || "";
+
+const discount = Number(attributes.discountPercent) || 0;
+
+const attributeText = [
+    specification,
+    unit,
+    discount > 0 ? `${discount}% off` : ""
+].filter(Boolean).join(" / ");
+
+
+                                        return `
+
+                                            <button
+                                                type="button"
+                                                class="variation-btn ${
+                                                    index === 0
+                                                        ? "selected"
+                                                        : ""
+                                                }"
+                                                onclick="selectVariation(${index})"
+                                            >
+
+
+${[attributes.specification || attributes.size, attributes.unit]
+    .filter(Boolean)
+    .join(" / ") || variation.sku}
+
+<div class="variation-prices">
+    ${
+        variation.mrp != null
+            ? `<del>₹${Number(variation.mrp).toFixed(2)}</del>`
+            : ""
+    }
+    <strong>₹${Number(variation.sellingPrice).toFixed(2)}</strong>
+</div>
+
+
+                                            </button>
+
+                                        `;
+                                    }
+                                )
+                                .join("")}
+
+                        </div>
+
+                    </div>
+
+                    `
+                    : ""
+                }
+
+
+                <div class="selected-price">
+
+                    <span>
+                        Price
+                    </span>
+
+                    <strong
+                        id="selected-price"
+                    >
+                        ₹${
+                            selectedVariation
+                                ? selectedVariation.sellingPrice
+                                : product.sellingPrice || 0
+                        }
+                    </strong>
+
+                </div>
+
+
+                <div class="quantity-section">
+
+                    <label for="quantity">
+                        Quantity
+                    </label>
+
+                    <div class="quantity-control">
+
+                        <button
+                            type="button"
+                            onclick="changeQuantity(-1)"
+                        >
+                            −
+                        </button>
+
+                        <input
+                            id="quantity"
+                            type="number"
+                            value="1"
+                            min="1"
+                        >
+
+                        <button
+                            type="button"
+                            onclick="changeQuantity(1)"
+                        >
+                            +
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="add-to-cart-btn"
+                    onclick="addToCart()"
+                >
+                    Add to Cart
+                </button>
+
+
+            </div>
+
+        </div>
+    `;
+}
+
+
+/* Select variation */
+
+function selectVariation(index) {
+
+    const variations =
+        currentProduct.variations || [];
+
+    const activeVariations =
+        variations.filter(
+            variation =>
+                variation.isActive !== false
+        );
+
+
+    selectedVariation =
+        activeVariations[index];
+
+
+    document
+        .querySelectorAll(".variation-btn")
+        .forEach((button, buttonIndex) => {
+
+            button.classList.toggle(
+                "selected",
+                buttonIndex === index
+            );
+
+        });
+
+
+    document.getElementById(
+        "selected-price"
+    ).textContent =
+        `₹${selectedVariation.sellingPrice}`;
+}
+
+
+/* Quantity */
+
+function changeQuantity(change) {
+
+    const input =
+        document.getElementById(
+            "quantity"
+        );
+
+    let quantity =
+        parseInt(input.value) || 1;
+
+
+    quantity += change;
+
+
+    if (quantity < 1) {
+        quantity = 1;
+    }
+
+
+    input.value = quantity;
+}
+
+
+/* Add to cart */
+
+async function addToCart() {
+
+    if (!selectedVariation) {
+
+        alert(
+            "Please select a product variation."
+        );
+
+        return;
+    }
+
+
+    const token =
+        localStorage.getItem("token");
+
+
+    if (!token) {
+
+          window.location.href = "login.html";
+
+        return;
+    }
+
+    const quantity =
+        parseInt(
+            document.getElementById(
+                "quantity"
+            ).value
+        ) || 1;
+
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE_URL}/cart/items`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json",
+
+                    "Authorization":
+                        `Bearer ${token}`
+                },
+
+                body: JSON.stringify({
+                    productId:
+                        currentProduct._id,
+
+                    sku:
+                        selectedVariation.sku,
+
+                    quantity
+                })
+            }
+        );
+
+
+        const result =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                result.message ||
+                "Unable to add product to cart"
+            );
+        }
+
+
+        showToast("Product added to cart successfully.", "success");
+
+
+    } catch (error) {
+
+        console.error(
+            "Add to cart error:",
+            error
+        );
+
+        showToast(
+    error.message || "Unable to add product to cart.",
+    "error"
+);
+    }
+}
+
+function showToast(message, type = "success") {
+    let toast = document.getElementById("toast");
+
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "toast";
+        document.body.appendChild(toast);
+    }
+
+    clearTimeout(window.productToastTimer);
+
+    // Hide first, then set the new message
+    toast.classList.remove("show");
+    toast.textContent = message;
+    toast.className = type;
+
+    // Display only when this function is called
+    requestAnimationFrame(() => {
+        toast.classList.add("show");
+    });
+
+    window.productToastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+        toast.textContent = "";
+    }, 3000);
+}
+/* Mobile menu */
+
+function openMenu() {
+
+    document
+        .getElementById("mobileMenu")
+        .classList.add("open");
+}
+
+
+function closeMenu() {
+
+    document
+        .getElementById("mobileMenu")
+        .classList.remove("open");
+}
+
+
+loadProduct();
+
+</script>
+
+</body>
+</html>
